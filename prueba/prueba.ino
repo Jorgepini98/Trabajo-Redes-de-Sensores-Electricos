@@ -1,6 +1,12 @@
 #include "Accel.h";
 #include "SdCard.h";
 #include "interrupt.h";
+#include "NTP.h";
+
+extern int totalInterruptCounter;
+extern MPU9250_asukiaaa mySensor;
+
+extern const char* ntpServer;
 
 char buf[50];
 sensorData dataSensor;
@@ -14,8 +20,14 @@ String data2Write = "";
 void setup() {
 
   Serial.begin(115200);
+
+  NTP_Setup();
+
+  String tiempo = getLocalTime();
+
+  Serial.println(tiempo);
   
-  dataSetup();
+  sensorSetup();
 
   SdSetup();
 
@@ -44,7 +56,7 @@ void loop() {
 }
 
 Serial.println(totalInterruptCounter);
-//if( totalInterruptCounter >= 800){
-//  readFile(SD, "/data.txt");
-//}
+if( totalInterruptCounter >= 800){
+  //readFile(SD, "/data.txt");
+}
 }
