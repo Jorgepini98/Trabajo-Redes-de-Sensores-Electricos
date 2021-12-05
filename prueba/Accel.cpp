@@ -14,33 +14,46 @@ void sensorSetup(){
   mySensor.beginMag();
 }
 
-struct sensorData readData(){
+struct sensorData readDataRaw(){
   
-  sensorData data;
+  sensorData dat;
   
   if (mySensor.accelUpdate() == 0 && mySensor.magUpdate() == 0 && mySensor.gyroUpdate() == 0) {
 
     //obtengo los valores del acelerómetro
-    data.aX = mySensor.accelX();
-    data.aY = mySensor.accelY();
-    data.aZ = mySensor.accelZ();
+    dat.aX = mySensor.accelX();
+    dat.aY = mySensor.accelY();
+    dat.aZ = mySensor.accelZ();
 
     //obtengo los valores del magnetómetro
-    data.mX = mySensor.magX();
-    data.mY = mySensor.magY();
-    data.mZ = mySensor.magZ();
+    dat.mX = mySensor.magX();
+    dat.mY = mySensor.magY();
+    dat.mZ = mySensor.magZ();
 
     //obtengo los valores del giroscopio
-    data.gX = mySensor.gyroX();
-    data.gY = mySensor.gyroY();
-    data.gZ = mySensor.gyroZ();
+    dat.gX = mySensor.gyroX();
+    dat.gY = mySensor.gyroY();
+    dat.gZ = mySensor.gyroZ();
     
     
     } else {
     Serial.println("Cannod read data values");
     }
   
-  return data;
+  return dat;
+  
+}
+
+String readData(int counter){
+
+     sensorData dataSensor = readDataRaw();
+
+     String A1 = String(counter) + "," + String(millis());
+     String A2 = String(dataSensor.aX) + "," + String(dataSensor.aY) + "," +  String(dataSensor.aZ);
+     String A3 = String(dataSensor.mX) + "," + String(dataSensor.mY) + "," +  String(dataSensor.mZ);
+     String A4 = String(dataSensor.gX) + "," + String(dataSensor.gY) + "," +  String(dataSensor.gZ);
+    
+     return (A1 + "," + A2 + "," + A3 + "," + A4);
   
 }
 

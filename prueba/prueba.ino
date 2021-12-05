@@ -13,7 +13,7 @@ sensorData dataSensor;
 
 File file;
 
-String filename = "cvs.txt";
+char fileName[20];
 
 String data2Write = "";
 
@@ -34,29 +34,25 @@ void setup() {
   int frecuency = 50;
 
   timerInterruptSetup(frecuency);
+
+  ("/" + tiempo + ".txt").toCharArray(fileName,20);
   
-  deleteFile(SD, "/data.txt");
+  deleteFile(SD, fileName);
   
 }
 
 void loop() {
 
   if(timerInterruptOn()){
-     
-     dataSensor = readData();
     
-     data2Write = (String(totalInterruptCounter) + "," + String(millis()) + "," + String(dataSensor.aX) + ","
-     + String(dataSensor.aY) + "," +  String(dataSensor.aZ) + "," +  String(dataSensor.mX)
-     + "," +  String(dataSensor.mY) + "," +  String(dataSensor.mZ) + '\n');
+     readData(totalInterruptCounter).toCharArray(buf, 50);
     
-     data2Write.toCharArray(buf, 50);
-    
-     appendFile(SD, "/data.txt", buf);
+     appendFile(SD, fileName, buf);
  
 }
 
-Serial.println(totalInterruptCounter);
-if( totalInterruptCounter >= 800){
-  //readFile(SD, "/data.txt");
-}
+//Serial.println(totalInterruptCounter);
+//if( totalInterruptCounter >= 800){
+//  //readFile(SD, "/data.txt");
+//}
 }

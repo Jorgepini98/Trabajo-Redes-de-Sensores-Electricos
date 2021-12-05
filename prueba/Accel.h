@@ -30,6 +30,8 @@ struct sensorData
 
 void sensorSetup();
 
-struct sensorData readData();
+struct sensorData readDataRaw();
+
+String readData(int counter);
 
 #endif

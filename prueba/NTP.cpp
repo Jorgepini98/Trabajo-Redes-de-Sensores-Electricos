@@ -1,8 +1,8 @@
 #include "NTP.h";
 
 // Credentials
-const char* ssid       = "SURFACEJORGE2228";
-const char* password   = "p0@926G8";//
+const char* ssid       = "pini";
+const char* password   = "123456_Aa";//
 
 
 const char* ntpServer = "europe.pool.ntp.org";
@@ -18,8 +18,9 @@ String getLocalTime(){
     Serial.println("Failed to obtain time");
     return "";
   }
-  tiempo_actual = String(timeinfo.tm_hour) + ":" +
-                  String(timeinfo.tm_min) + ":" +
+  tiempo_actual = String(timeinfo.tm_mday) + "_" +
+                  String(timeinfo.tm_hour) + "_" +
+                  String(timeinfo.tm_min) + "_" +
                   String(timeinfo.tm_sec) + "\n";
 
                   //(&timeinfo, "%A, %B %d %Y %H:%M:%S");
