@@ -14,24 +14,22 @@
 
 struct sensorData
 {
-  double aX;
-  double aY;
-  double aZ;
+  int aX;
+  int aY;
+  int aZ;
 
-  double mX;
-  double mY;
-  double mZ;
+  int mX;
+  int mY;
+  int mZ;
 
-  float gX;
-  float gY;
-  float gZ;
+  int gX;
+  int gY;
+  int gZ;
 };
 
 
 void sensorSetup();
 
-struct sensorData readDataRaw();
-
-String readData(int counter);
+struct sensorData readData();
 
 #endif
