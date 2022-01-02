@@ -28,8 +28,10 @@ struct sensorData
 };
 
 
-void sensorSetup();
+void sensorSetup(int acel,int magne,int gyro);
 
-struct sensorData readData();
+struct sensorData readAcel();
+struct sensorData readMag();
+struct sensorData readGyro();
 
 #endif

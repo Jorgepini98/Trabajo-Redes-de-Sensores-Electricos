@@ -31,20 +31,12 @@ void setup() {
   String tiempo = getLocalTime();
 
   Serial.println(tiempo);
-
-  delay(100);
   
   sensorSetup();
 
-  delay(500);
-
   SdSetup();
 
-  delay(500);
-
   OLEDsetup();
-
-  delay(100);
 
   int frecuency = 50;
 
@@ -65,6 +57,8 @@ void setup() {
   }
   else {
   displayUp("Malo");
+  deleteFile(SD, fileName);
+  while(1);
   }
   
 }

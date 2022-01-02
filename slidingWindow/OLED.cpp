@@ -65,3 +65,27 @@ void OLEDsetup() {
     isDisplayVisible = true;
 
 }
+
+void printStatus(int Status){
+   oled.setCursor(0,0);
+  switch(Status) {
+    case 0:
+      oled.print("Quieto");
+      break;
+    case 1:
+      oled.print("Sentado");
+      break;
+    case 2:
+      oled.print("Andando");
+      break;
+    case 3:
+      oled.print("Escaleras");
+      break;
+    case 4:
+      oled.print("Corriendo");
+      break;
+    default:
+      oled.print("Desconocido");
+      break;
+  }
+}   
