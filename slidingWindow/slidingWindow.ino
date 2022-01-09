@@ -1,3 +1,4 @@
+#include <CircularBuffer.h>;
 #include "Accel.h";
 #include "interrupt.h";
 #include "OLED.h";
@@ -7,10 +8,21 @@ extern MPU9250_asukiaaa mySensor;
 
 sensorData dataSensor;
 
-int arraySize = 100;
+CircularBuffer<int,200> HighPass_Acel;
+
+CircularBuffer<int,200> aY;
+
+using index_aY = decltype(HighPass_Acel)::index_t;
+
+
+
+int arraySize = 200;
+
+
+
 
 //int aX[100] = {0};
-int aY[100] = {0};
+//int aY[100] = {0};
 //int aZ[100] = {0};
 
 //int gX[100] = {0};
@@ -23,9 +35,9 @@ int saveCounter = 0;
 
 double ALPHA = 0.6; //0-10
 
-int HighPass_Acel[100] = {0};
-
-int LowPass_Gyro[100] = {0};
+//int HighPass_Acel[100] = {0};
+//
+//int LowPass_Gyro[100] = {0};
 
 void setup() {
 
@@ -35,7 +47,7 @@ void setup() {
 // 1 digito -> acelerometro
 // 2 digito -> magnetómetro
 // 3 digito -> giroscopio
-  sensorSetup(1,0,0);
+  sensorSetup(1,1,1);
 
   OLEDsetup();
 
@@ -43,38 +55,28 @@ void setup() {
 
   timerInterruptSetup(frecuency);
 
-  while(totalInterruptCounter < arraySize - 1){
+  Serial.println("Setup");
+
+  while(totalInterruptCounter <= arraySize){
+
+   // Serial.println(1);
 
     if(timerInterruptOn()){ //(saveCounter > totalInterruptCounter)
-    saveCounter = totalInterruptCounter;
+
+     // Serial.println(2);
     dataSensor = readAcel();
-    //dataSensor = readGyro();
-
-    //aX[totalInterruptCounter + 1] = dataSensor.aX;
-    aY[totalInterruptCounter + 1] = dataSensor.aY;
-    //aZ[totalInterruptCounter + 1] = dataSensor.aZ;
-
-    //gX[totalInterruptCounter + 1] = dataSensor.gX;
-    //gY[totalInterruptCounter + 1] = dataSensor.gY;
-    //gZ[totalInterruptCounter + 1] = dataSensor.gZ;
+    
+    aY.push(dataSensor.aY);
     
     
 
 //FILTER
-    
-    HighPass_Acel[totalInterruptCounter + 1] = HighPass(aY[totalInterruptCounter + 1],aY[totalInterruptCounter], ALPHA);
 
-    //LowPass_Gyro[totalInterruptCounter + 1] = LowPass(gY[totalInterruptCounter + 1],gY[totalInterruptCounter], ALPHA);
+    if(totalInterruptCounter > 1){
+      
+    HighPass_Acel.push(HighPass(aY[totalInterruptCounter - 1],aY[totalInterruptCounter - 2], ALPHA));
 
-//    Serial.print("1");
-//    Serial.println(aY[totalInterruptCounter]);
-//    Serial.print("2");
-//    Serial.println(HighPass_Acel[totalInterruptCounter]);
-
-    //Serial.print(gY[totalInterruptCounter]);
-    //Serial.print(" gyro  ");
-    //Serial.println(LowPass_Gyro[totalInterruptCounter]);
-    
+    }
     }
     
   }
@@ -82,64 +84,31 @@ void setup() {
 }
 
 void loop() {
+   
 
   if(timerInterruptOn()){
-
-    //Serial.println(1);
     
     dataSensor = readAcel();
 
-    //Serial.println(2);
+    aY.push(dataSensor.aY);
 
-    //desplazarArrays();
+    HighPass_Acel.push(ZeroIfLessThan(1000,HighPass(aY[199],aY[198], ALPHA)));
 
-    for(int i = 0; i < 100; i++){
-      //aY[i] <<= 1;
-      //HighPass_Acel[i] <<= 1;
-      
-      //aY[i] = aY[i + 1];
-      //HighPass_Acel[totalInterruptCounter] = HighPass_Acel[totalInterruptCounter + 1];
-    }
-    
-    //aX[arraySize - 1] = dataSensor.aX;
-    aY[arraySize - 1] = dataSensor.aY;
-    //aZ[arraySize - 1] = dataSensor.aZ;
+   //LowPass_Gyro[arraySize - 1] = LowPass(gY[arraySize - 1],gY[arraySize - 2], ALPHA);
 
-    //gX[arraySize - 1] = dataSensor.gX;
-    //gY[arraySize - 1] = dataSensor.gY;
-    //gZ[arraySize - 1] = dataSensor.gZ;
 
-    HighPass_Acel[arraySize - 1] = ZeroIfLessThan(1500,HighPass(aY[arraySize - 1],aY[arraySize - 2], ALPHA));
 
-    //LowPass_Gyro[arraySize - 1] = LowPass(gY[arraySize - 1],gY[arraySize - 2], ALPHA);
+    Serial.println(HighPass_Acel[200]); 
 
-    //Serial.println(1);
-    Serial.println(HighPass_Acel[arraySize - 1]); 
+    //Serial.println(ZeroIfLessThan(1500,HighPass(aY[200],aY[199], ALPHA)));
     
     //if(totalInterruptCounter % 10){}
 
+    //Serial.println(aY[200]); 
+
   }
-  }
- 
-
-void desplazarArrays(){
-  
-    for(int i = 0; i < 100; i++){ //cambiar a 200
-
-    //aX[i] = aX[i + 1];
-    aY[i] = aY[i + 1];
-    //aZ[i] = aZ[i + 1];
-
-    //gX[i] = gX[i + 1];
-    //gY[i] = gY[i + 1];
-    //gZ[i] = gZ[i + 1];
-
-    HighPass_Acel[totalInterruptCounter] = HighPass_Acel[totalInterruptCounter + 1];
-
-    //LowPass_Gyro[totalInterruptCounter] = LowPass_Gyro[totalInterruptCounter + 1];
-   
-    }
 }
+ 
 
 int LowPass(int valorActual,int valorAnterior, int alpha){
   return ((ALPHA * valorActual) + (1 - ALPHA) * valorAnterior);
