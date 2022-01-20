@@ -28,9 +28,9 @@ struct sensorData readDataRaw(){
   if (mySensor.accelUpdate() == 0 && mySensor.magUpdate() == 0 && mySensor.gyroUpdate() == 0) {
 
     //obtengo los valores del acelerómetro
-    dat.aX = mySensor.accelX();
-    dat.aY = mySensor.accelY();
-    dat.aZ = mySensor.accelZ();
+    dat.aX = mySensor.accelX()*10000;
+    dat.aY = mySensor.accelY()*10000;
+    dat.aZ = mySensor.accelZ()*10000;
 
     //obtengo los valores del magnetómetro
     dat.mX = mySensor.magX();
@@ -62,7 +62,7 @@ String readData(int counter){
      //DATA4 = "2";
      //DATA3 = "1";
 
-   //Serial.println(DATA1 + "," + DATA2 + "," + DATA3 + "," + DATA4 + "\n");
+   Serial.println(dataSensor.aX);
    
      return (DATA1 + "," + DATA2 + "," + DATA3 + "," + DATA4 + "\n");
   

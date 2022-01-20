@@ -11,6 +11,8 @@ sensorData dat;
 
 void sensorSetup(int acel,int magne,int gyro){
 
+  //activo las funciones del sensor en función de la entrada
+
   #ifdef _ESP32_HAL_I2C_H_ // For ESP32
   Wire.begin(SDA_PIN, SCL_PIN);
   mySensor.setWire(&Wire);
@@ -29,11 +31,7 @@ void sensorSetup(int acel,int magne,int gyro){
 
 struct sensorData readAcel(){
 
-//Serial.println(4);
-
   if (mySensor.accelUpdate() == 0){ //mySensor.accelUpdate() == 0
-
-//Serial.println(5);
 
     //obtengo los valores del acelerómetro
     dat.aX = mySensor.accelX()*10000;
@@ -43,8 +41,6 @@ struct sensorData readAcel(){
   } else {
     Serial.println("Cannod read acelerometer values");
   }
-
- //Serial.println(6);
   
   return dat;
 }
