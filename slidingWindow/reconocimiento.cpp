@@ -34,7 +34,7 @@ int reconocimiento(int actAnterior,int meanX_1,int meanX_2,int meanY,int L,int e
         }
         else if (meanY < -8500) 
         {
-          if (actAnterior == 2 || (meanX_1 > 0 && meanX_2 < -1000))
+          if ((actAnterior == 2 && meanX_2 < -1000) || (meanX_1 > 0 && meanX_2 < -1000))
           {
             Serial.println("sentado");
             actividad = 2;

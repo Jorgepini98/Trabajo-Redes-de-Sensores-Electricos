@@ -6,6 +6,7 @@
 #include <Adafruit_SSD1331.h>
 #include <SPI.h>
 
+#define clear() fillScreen(0)
 
 void displayUp(String info);
 void OLEDsetup();

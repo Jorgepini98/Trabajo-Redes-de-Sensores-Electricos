@@ -71,6 +71,9 @@ int thresholdTiempoZancada = 200;
 
 int Actividad = 0;
 
+int frecuency = 50;
+
+int contador = 0;
 
 //filtrado
 
@@ -182,6 +185,10 @@ void loop() {
 
           energia = energia + HighPass_Total[i];
 
+          contador = contador + 1; //no puedo utilizar la variable i dado que es un tipo exclusivo para el circular buffer
+
+          //Serial.println(energia);
+
           meanY = meanY + LowPass_AcelY[i];
 
           if (i < 100)
@@ -197,24 +204,33 @@ void loop() {
 
               picoActual = 1;
             
-              tiempoActualPico = millis();
+              tiempoActualPico = contador*frecuency;
 
               tiempoEntrePicos = tiempoActualPico - tiempoAnteriorPico;
 
-              if (tiempoMax < tiempoEntrePicos)
+//              Serial.print("HighPass_Total: ");
+//              Serial.println(HighPass_Total[i]);
+//
+//              Serial.print("tiempoEntrePicos: ");
+//              Serial.println(tiempoEntrePicos);
+
+              
+
+              if (picoAnterior == 0 && tiempoEntrePicos > thresholdTiempoZancada)
               {
-              tiempoMax = tiempoEntrePicos;
-              }
 
-              if (picoActual == 1 && picoAnterior == 0 && tiempoEntrePicos > thresholdTiempoZancada)
-              {
-              mediaTiempos += tiempoEntrePicos;
-
-              tiempos[numeroPicos] = tiempoEntrePicos;
-
-              numeroPicos += numeroPicos;
-
-              tiempoAnteriorPico = millis();
+                if (tiempoMax < tiempoEntrePicos)
+                {
+                tiempoMax = tiempoEntrePicos;
+                }
+              
+                mediaTiempos = mediaTiempos + tiempoEntrePicos;
+  
+                tiempos[numeroPicos] = tiempoEntrePicos;
+  
+                numeroPicos = numeroPicos + 1;
+  
+                tiempoAnteriorPico = contador*frecuency;
               }
               
             }
@@ -232,7 +248,9 @@ void loop() {
 
         
 
-        Actividad = reconocimiento(Actividad,meanX_1,meanX_2,meanY,arraySize,energia,1000,100000,numeroPicos,2);
+        Actividad = reconocimiento(Actividad,meanX_1,meanX_2,meanY,arraySize,energia,5000,50000,numeroPicos,2);
+
+        printStatus(Actividad);
 
 //        Serial.print("MediaY: ");
 //        Serial.println(meanY);
@@ -280,6 +298,8 @@ void loop() {
         tiempoEntrePicos = 0;
         
         mediaTiempos = 0;
+
+        contador = 0;
         
         //tiempos[] = {0};
         

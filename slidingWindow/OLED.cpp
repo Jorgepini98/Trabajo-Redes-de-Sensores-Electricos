@@ -39,18 +39,6 @@ bool            isDisplayVisible        = false;
 const size_t    MaxString               = 16;
 
 
-
-
-void displayUp(String info) {
-
-  oled.setCursor(0,0);
-
-  // draw the new time value
-  oled.print(info);
-   
-}
-
-
 void OLEDsetup() {
 
 
@@ -59,7 +47,9 @@ void OLEDsetup() {
     oled.setFont();
     oled.fillScreen(OLED_Background_Color);
     oled.setTextColor(OLED_Text_Color);
-    oled.setTextSize(3);
+    oled.setTextSize(2);
+
+    
 
     // the display is now on
     isDisplayVisible = true;
@@ -67,22 +57,23 @@ void OLEDsetup() {
 }
 
 void printStatus(int Status){
+   oled.clear();
    oled.setCursor(0,0);
   switch(Status) {
     case 1:
-      oled.print("Quieto");
+      oled.print("TUMBADO");
       break;
     case 2:
-      oled.print("Tumbado");
+      oled.print("SENTADO");
       break;
     case 3:
-      oled.print("Andando");
+      oled.print("DE PIE");
       break;
     case 4:
-      oled.print("Escaleras");
+      oled.print("CORRIENDO");
       break;
     case 5:
-      oled.print("Corriendo");
+      oled.print("ANDANDO");
       break;
     default:
       oled.print("Desconocido");
