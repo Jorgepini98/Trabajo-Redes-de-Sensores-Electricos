@@ -3,6 +3,10 @@
 #include "interrupt.h";
 #include "OLED.h";
 #include "reconocimiento.h";
+#include "filtrado.h";
+#include "ComWifi.h";
+
+
 
 extern int totalInterruptCounter;
 extern MPU9250_asukiaaa mySensor;
@@ -23,8 +27,6 @@ CircularBuffer<int,200> HighPass_Total;
 using index_t = decltype(HighPass_AcelX)::index_t;
 
 int arraySize = 200;
-
-int energia_aY = 0;
 
 int energia = 0;
 
@@ -57,26 +59,29 @@ int meanY = 0;
 int meanX_1 = 0;
 int meanX_2 = 0;
 
-int saveCounter = 0;
-
 int picoActual = 0;
 int picoAnterior = 0;
 int tiempoMax = 0;
 
 int tiempos[] = {0};
 
-int thresholdPico = 3000;
-
+//threshold para descartar
+int thres_EnPico = 3000;
 int thresholdTiempoZancada = 200;
 
+//threshold para el reconocimiento
+int thres_En1 = 100000;
+int thres_En2 = 400000;
+int thres_nPicos = 3;
+
 int Actividad = 0;
+int actAnterior = 0;
 
 int frecuency = 50;
 
 int contador = 0;
 
 //filtrado
-
 double ALPHA = 0.6;
 
 void setup() {
@@ -89,23 +94,22 @@ void setup() {
 // 3 digito -> giroscopio
   sensorSetup(1,1,1);
 
+//inicializacion de la pantalla OLED
   OLEDsetup();
 
-  int frecuency = 50;
-
+//inicialización de la interrupción del timer a una frecuencia determinada
   timerInterruptSetup(frecuency);
 
-  Serial.println("Setup");
+ //wifiSetup();
 
-//antes de empezar el bucle lleno el array de datos
+  //Serial.println("Setup");
 
-  while(!LowPass_AcelX.isFull()){
+//antes de empezar el bucle principal lleno el array de datos
 
-   // Serial.println(1);
+  while(!LowPass_AcelX.isFull()){  
 
-    if(timerInterruptOn()){ //(saveCounter > totalInterruptCounter)
-
-     // Serial.println(2);
+    if(timerInterruptOn()){ 
+  
     dataSensor = readAcel();
     
     aX_2 = aX_1;
@@ -126,6 +130,8 @@ void setup() {
 
     LowPass_AcelZ.push(LowPass(aZ_1,aZ_2, ALPHA));
     HighPass_AcelZ.push(HighPass(aZ_1,LowPass_AcelZ[200]));
+  
+  total = abs(HighPass_AcelX[200]) + abs(HighPass_AcelY[200]) + abs(HighPass_AcelZ[200]);
 
     }
     
@@ -142,17 +148,21 @@ void loop() {
    
 
   if(timerInterruptOn()){
-    
+
+    //leo aceleraciones del sensor
     dataSensor = readAcel();
 
+    //Actualizo los valores de aceleración anteriores
     aX_2 = aX_1;
     aY_2 = aY_1;
     aZ_2 = aZ_1;
-
+    //asigno los valores actuales de aceleración
     aX_1 = dataSensor.aX;
     aY_1 = dataSensor.aY;
     aZ_1 = dataSensor.aZ;
 
+    //realizo el filtrado de las 3 axis de la aceleración, tanto paso alto como paso alto. 
+    // Para el paso alto se utiliza el paso bajo
     LowPass_AcelX.push(LowPass(aX_1,aX_2, ALPHA));
     HighPass_AcelX.push(HighPass(aX_1,LowPass_AcelX[200]));
 
@@ -162,12 +172,12 @@ void loop() {
     LowPass_AcelZ.push(LowPass(aZ_1,aZ_2, ALPHA));
     HighPass_AcelZ.push(HighPass(aZ_1,LowPass_AcelZ[200]));
 
+    //sumo los valores absolutos de las 3 axis
     total = abs(HighPass_AcelX[200]) + abs(HighPass_AcelY[200]) + abs(HighPass_AcelZ[200]);
 
-
-    //Serial.println(total);
     
-    if (total < 3000)
+    //realizo un filtrado para la suma total y lo guardo en el array
+    if (total < thres_EnPico)
     {
       HighPass_Total.push(0);
     }
@@ -176,21 +186,27 @@ void loop() {
       HighPass_Total.push(total);
     }
 
-    //Serial.println(HighPass_AcelY[200]); 
+    //Serial.println(HighPass_Total[200]); 
     
-
+    //cada 50 interrupciones se realiza el reconocimiento (50 interaciones / 50Hz = 1 seg)
     if(totalInterruptCounter%50 == 1){
 
+        //recorro el array entero para analizar la totalidad de los datos
         for(index_t i = 0; i < HighPass_Total.size(); i++) {
 
+          //sumo la energia total del vector
           energia = energia + HighPass_Total[i];
 
-          contador = contador + 1; //no puedo utilizar la variable i dado que es un tipo exclusivo para el circular buffer
+          //contador dado que no puedo utilizar la variable i dado que es un tipo exclusivo para el circular buffer
+          contador = contador + 1;
 
           //Serial.println(energia);
 
+          //obtengo las medias de las axis Y e X fuera de la función de reconocimiento dado que no me deja meter el vector en la función (no es array como tal)
+          //Ahora se suman los valores, despues se divide para todos lo valores
           meanY = meanY + LowPass_AcelY[i];
 
+          //defino una media para la primera mitad y otra para la segunda mitad (característica para el reconocimiento)
           if (i < 100)
           {
             meanX_1 = meanX_1 + LowPass_AcelX[i];
@@ -200,12 +216,16 @@ void loop() {
             meanX_2 = meanX_2 + LowPass_AcelX[i];
           }
 
-            if(HighPass_Total[i] > thresholdPico){
+            //Funcionalidad para contar el número de picos, 
+            if(HighPass_Total[i] > thres_EnPico){
 
+              //defino con 1 o 0 si hay pico o no en esta iteración
               picoActual = 1;
-            
-              tiempoActualPico = contador*frecuency;
 
+              //De esta forma puedo contabilizar en ms los tiempos
+              tiempoActualPico = contador*(1000/frecuency);
+
+              //calculo la diferencia de tiempos con el pico anterior
               tiempoEntrePicos = tiempoActualPico - tiempoAnteriorPico;
 
 //              Serial.print("HighPass_Total: ");
@@ -214,8 +234,7 @@ void loop() {
 //              Serial.print("tiempoEntrePicos: ");
 //              Serial.println(tiempoEntrePicos);
 
-              
-
+              //Si en el momento anterior no ha habido pico y el tiempo entre picos es mayor al definido
               if (picoAnterior == 0 && tiempoEntrePicos > thresholdTiempoZancada)
               {
 
@@ -230,45 +249,33 @@ void loop() {
   
                 numeroPicos = numeroPicos + 1;
   
-                tiempoAnteriorPico = contador*frecuency;
-              }
-              
-            }
-            
+                tiempoAnteriorPico = contador*(1000/frecuency);
+              }              
+            }            
             picoAnterior = picoActual;           
-            picoActual = 0;
-            
+            picoActual = 0;           
         }
         
-
+        //se divide para el total correspondiente
         meanX_1 = meanX_1/(arraySize/2);
         meanX_2 = meanX_2/(arraySize/2);
 
         meanY = meanY/arraySize;
 
         
-
-        Actividad = reconocimiento(Actividad,meanX_1,meanX_2,meanY,arraySize,energia,5000,50000,numeroPicos,2);
-
-        printStatus(Actividad);
-
-//        Serial.print("MediaY: ");
-//        Serial.println(meanY);
-//
-//        Serial.print("MediaX: ");
-//        Serial.println(meanX_1);
-//        
-//        Serial.print("energia: ");
-//        Serial.println(energia);
-//
-//        Serial.print("Npicos: ");
-//        Serial.println(numeroPicos);
-//        
-//        Serial.print("Actividad: ");
-//        Serial.println(Actividad);
-//        Serial.println("");
+        //Función de reconocimiento de actividad
+        Actividad = reconocimiento(actAnterior,meanX_1,meanX_2,meanY,arraySize,energia,thres_En1,thres_En2,numeroPicos,thres_nPicos);
         
-        //Serial.println(10);
+        //Pantalla oled
+        if (Actividad != actAnterior){
+        printStatus(Actividad);
+        }
+
+        //sendDataWifi(Actividad);
+        
+        //mostrarEnPantalla(meanY, meanX, energia, numeroPicos, Actividad);
+
+        //funcionalidades no utilizadas
 
 //        mediaTiempos = mediaTiempos/numeroPicos;
 //        
@@ -283,9 +290,10 @@ void loop() {
 //        desTyp = sqrt(var / numeroPicos);
 
 
-        //funcióon reconocimiento actividad
 
-        //inicializar a cero las variables
+        //inicialización de las variables 
+
+        actAnterior = Actividad;
 
         energia = 0;
 
@@ -300,29 +308,30 @@ void loop() {
         mediaTiempos = 0;
 
         contador = 0;
+
         
         //tiempos[] = {0};
         
     }
   }
 }
- 
-
-int LowPass(int valorActual,int valorAnterior, int alpha){
-  return ((ALPHA * valorActual) + (1 - ALPHA) * valorAnterior);
-}
-
-int HighPass(int valorActual,int lowPass){
-  return (valorActual - lowPass);
-}
-
-int HighPass1(int valorActual,int valorAnterior, int alpha){
-  return (valorActual - LowPass(valorActual,valorAnterior,alpha));
-}
-
-int ZeroIfLessThan(int threshold,int valor){ 
-  if (abs(valor) <= threshold){
-         valor = 0;
-     } 
-     return valor;
-}
+//
+//void mostrarEnPantalla(int meanY, int meanX, int energia, int numeroPicos, int Actividad){
+//
+//        Serial.print("MediaY: ");
+//        Serial.println(meanY);
+//
+//        Serial.print("MediaX: ");
+//        Serial.println(meanX_1);
+//        
+//        Serial.print("energia: ");
+//        Serial.println(energia);
+//
+//        Serial.print("Npicos: ");
+//        Serial.println(numeroPicos);
+//       
+//        Serial.print("Actividad: ");
+//        Serial.println(Actividad);
+//        Serial.println("");
+//
+//}

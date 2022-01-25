@@ -13,7 +13,7 @@ int totalInterruptCounter;
 }
 
 void timerInterruptSetup(int f){
-  //el cpunter del esp32 es de 80Mhz, de forma que se utiliza un preescaler de 80 consiguiendo un reloj de 10Mhz
+  //el counter del esp32 es de 80Mhz, de forma que se utiliza un preescaler de 80 consiguiendo un reloj de 10Mhz
   // el la frecuencia de la interrupción vendra definida por
   // f = 1000000/counter; por tanto counter = 1000000/f
   // timerAlarmWrite(timer, us, true);

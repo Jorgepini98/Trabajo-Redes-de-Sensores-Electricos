@@ -10,8 +10,7 @@
 #endif
 
 
-
-
+//Estructura de los datos obtenidos del sensor
 struct sensorData
 {
   int aX;

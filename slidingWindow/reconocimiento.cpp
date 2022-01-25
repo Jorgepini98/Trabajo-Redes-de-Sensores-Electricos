@@ -14,11 +14,9 @@ int reconocimiento(int actAnterior,int meanX_1,int meanX_2,int meanY,int L,int e
 
   int actividad = 0;
 
-  //Serial.println(2);
 
   if (ener < thres_En1){
 
-    //Serial.println(3);
 
 //        meanY = media(LP_acelY,0,L);
 //       
@@ -48,7 +46,6 @@ int reconocimiento(int actAnterior,int meanX_1,int meanX_2,int meanY,int L,int e
   }  
   else if(nPicos >= thres_nPicos)
   {
-      //Serial.println(4);
       if (ener > thres_En2)
       {
       Serial.println("corriendo");

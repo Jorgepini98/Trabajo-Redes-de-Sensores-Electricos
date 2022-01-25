@@ -32,12 +32,6 @@ Adafruit_SSD1331 oled =
         OLED_pin_res_rst
      );
 
-// assume the display is off until configured in setup()
-bool            isDisplayVisible        = false;
-
-// declare size of working string buffers. Basic strlen("d hh:mm:ss") = 10
-const size_t    MaxString               = 16;
-
 
 void OLEDsetup() {
 
@@ -48,11 +42,6 @@ void OLEDsetup() {
     oled.fillScreen(OLED_Background_Color);
     oled.setTextColor(OLED_Text_Color);
     oled.setTextSize(2);
-
-    
-
-    // the display is now on
-    isDisplayVisible = true;
 
 }
 
