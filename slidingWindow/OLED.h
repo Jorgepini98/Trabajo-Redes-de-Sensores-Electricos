@@ -10,6 +10,6 @@
 
 void displayUp(String info);
 void OLEDsetup();
-void printStatus(int Status);
+void printStatusOLED(int Status);
 
 #endif
