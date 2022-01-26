@@ -6,16 +6,16 @@ int reconocimiento(int actAnterior,int meanX_1,int meanX_2,int meanY,int L,int e
 
   int actividad = 0;
 
-  if (ener < thres_En1){
+  if (ener < thres_En1){//Actividad dinámica o estática
 
-        if (meanY > -8500 && meanX < -8500)
+        if (meanY > -8500 && meanX < -8500) //si en el axis Y tenemos una aceleracion próxima a 10000(gravedad) se identificara como tumbado
         {
           actividad = 1;
           Serial.println("tumbado");
         }
-        else if (meanY < -8500) 
+        else if (meanY < -8500) //si estamos posicionados verticalmente
         {
-          if ((actAnterior == 2 && meanX_2 < -1000) || (meanX_1 > 0 && meanX_2 < -1000))
+          if ((actAnterior == 2 && meanX_2 < -1000) || (meanX_1 > 0 && meanX_2 < -1000)) //reconocimiento sentarse
           {
             Serial.println("sentado");
             actividad = 2;
@@ -27,9 +27,9 @@ int reconocimiento(int actAnterior,int meanX_1,int meanX_2,int meanY,int L,int e
           }
         }
   }  
-  else if(nPicos >= thres_nPicos)
+  else if(nPicos >= thres_nPicos) // si hay repetición
   {
-      if (ener > thres_En2)
+      if (ener > thres_En2)// si supera el nivel de energia indicado
       {
       Serial.println("corriendo");
       actividad = 4;
