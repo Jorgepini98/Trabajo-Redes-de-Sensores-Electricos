@@ -4,7 +4,6 @@
 #include "OLED.h";
 #include "reconocimiento.h";
 #include "filtrado.h";
-#include "ComWifi.h";
 
 //-----------declaración de variables
 
