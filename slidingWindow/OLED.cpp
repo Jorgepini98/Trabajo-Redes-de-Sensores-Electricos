@@ -34,9 +34,7 @@ Adafruit_SSD1331 oled =
 
 
 void OLEDsetup() {
-
-
-    // initialise the SSD1331
+   // initialise the SSD1331
     oled.begin();
     oled.setFont();
     oled.fillScreen(OLED_Background_Color);
@@ -45,7 +43,7 @@ void OLEDsetup() {
 
 }
 
-void printStatus(int Status){
+void printStatusOLED(int Status){
    oled.clear();
    oled.setCursor(0,0);
   switch(Status) {
