@@ -25,7 +25,7 @@ CircularBuffer<int,200> HighPass_Total;
 
 using index_t = decltype(HighPass_AcelX)::index_t;
 
-int arraySize = 200;
+const int arraySize = 200;
 
 int energia = 0;
 
@@ -65,23 +65,23 @@ int tiempoMax = 0;
 int tiempos[] = {0};
 
 //threshold para descartar
-int thres_EnPico = 3000;
-int thresholdTiempoZancada = 200;
+const int thres_EnPico = 3000;
+const int thresholdTiempoZancada = 200;
 
 //threshold para el reconocimiento
-int thres_En1 = 100000;
-int thres_En2 = 400000;
-int thres_nPicos = 3;
+const int thres_En1 = 100000;
+const int thres_En2 = 400000;
+const int thres_nPicos = 3;
 
 int Actividad = 0;
 int actAnterior = 0;
 
-int frecuency = 50;
+const int frecuency = 50;
 
 int contador = 0;
 
 //filtrado
-double ALPHA = 0.6;
+const double ALPHA = 0.6;
 
 //SETUP
 void setup() {
