@@ -1,7 +1,7 @@
 #include "ComWifi.h";
 
-//const char* ssid       = "SURFACEJORGE2228";
-//const char* password   = "p0@926G8";
+//const char* ssid       = "";
+//const char* password   = "";
 //
 ////ipconfig servidor
 //const IPAddress serverIP(192,168,137,1); // La dirección que desea visitar
